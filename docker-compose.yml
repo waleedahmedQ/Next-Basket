@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  users:
+    container_name: users
+    build:
+      context: ./user-service/devops/php
+    volumes:
+      - ./user-service/:/var/www
+    depends_on:
+      - basket-db
+    networks:
+      - basket
+
+  notifications:
+    container_name: notifications
+    build:
+      context: ./notification-service/devops/php
+    volumes:
+      - ./notification-service/:/var/www
+    depends_on:
+      - basket-db
+    networks:
+      - basket
+
+  nginx-users:
+    build:
+      context: ./user-service/devops/nginx
+    ports:
+      - "8089:80"
+    depends_on:
+      - users
+    networks:
+      - basket
+
+  nginx-notifications:
+    build:
+      context: ./notification-service/devops/nginx
+    ports:
+      - "8090:80"
+    depends_on:
+      - notifications
+    networks:
+      - basket
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:15672"
+    depends_on:
+      - users
+      - notifications
+
+  basket-db:
+    container_name: basket-db
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - ./.env.db
+    ports:
+      - "8088:3306"
+    networks:
+      - basket
+
+networks:
+  basket:

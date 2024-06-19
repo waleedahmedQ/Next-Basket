@@ -1,0 +1,10 @@
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                # Add your transport options here
+        routing:
+            'App\Message\UserCreatedEvent': async
